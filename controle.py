@@ -4,21 +4,36 @@ import sys
 import numpy as np
 from PyDimitri import Joint, DxlComm
 import time 
-#--------------------- Set Perna -------------------------------
-idmotors = [13,15,17,19,21,23]
-setAngle = [4.59,5.37,1.11,5.25,6.21,0.73]
-joints = [Joint(mid) for mid in idmotors]
 
 port = DxlComm('/dev/ttyUSB0', 1)
+#----------------------- Set foot ---------------------------------
+idmotors1 = [21,23]
+setAngle1 = [6.22,0.83]
+joints1 = [Joint(mid1) for mid1 in idmotors1]
+port.attachJoints(joints1)
+i = 0
+for j in joints1:
+	j.enableTorque()
+for j in joints1:
+    j.setGoalAngle(setAngle1[i])
+    print(setAngle1[i])
+    i += 1
+port.sendGoalAngles()
+#--------------------- Set joelho -------------------------------
+idmotors = [13,15,17,19]
+setAngle = [4.32,5.11,1.24,5.37]
+joints = [Joint(mid) for mid in idmotors]
 
 port.attachJoints(joints)
 i = 0
-#while True:
+# for j in joints:
+# 	j.enableTorque()
 for j in joints:
     j.setGoalAngle(setAngle[i])
     print(setAngle[i])
     i += 1
 port.sendGoalAngles()
+#------------------------------------------------------------------
 
 time.sleep(3)
 
@@ -79,7 +94,8 @@ i = 0
 import csv
 file = open('caso.csv', 'w')
 writer = csv.writer(file)
-
+ganho = 1.0
+tempo_step = 2
 while True:
     i += 1
 
@@ -89,52 +105,59 @@ while True:
 
     u1l = u1
     u1 = -c1*u1l + a1*e1 + b1*e1l
+    u1 = u1*ganho
     #print('u1', u1, u1l)
 
     u2l = u2
     u2 = -c2*u2l + a2*u1 + b2*u1l
+    u2 = u2*ganho
     #print('u2', u2, u2l)
 
     u3l2 = u3l
     u3l = u3
     u3 = -c3*u3l + a3*u2 + b3*u2l
+    u3 = u3*ganho
     print('control', u3, u3l, u3l2)
-
-    # upl2 = upl
-    # upl = up
-    # up = -ep*upl -fp*upl2 + ap*u3 + bp*u3l + cp*u3l2
-    # print('planta', up, upl, upl2)
-
-    # # if (x > 0):
-    # #     y = 240 + up
-    # # if (x == 0):
-    # #     y = 247 + up
-
+    
     #--------------------------------------------
     # y = up
     print('referencia', r)
     #print('goal', aux)
     y = j1.receiveSEA()
+    if (y > 0):
+        yl = y
+    if (y == 0.0):
+        y = yl
     print('planta', y)
     writer.writerow([i,y])
     e_rad = round(u3*math.pi/180.,5)
-    print('rad',e_rad)
+    #print('rad',e_rad)
     
-    # ik = 0
-    # for j in joints:
-    #     j.setGoalAngle(setAngle[ik] + e_rad)
-    #     print(setAngle[ik]+e_rad)
-    #     ik += 1
-    
-    for ik, j in enumerate(joints):
-        if (ik < 4):
-            a = setAngle[ik] + e_rad
-            #print(type(a))
-            j.setGoalAngle(a)
-            print(ik,setAngle[ik]+e_rad)
-        if (ik >= 4):
-            a = setAngle[ik]
-            j.setGoalAngle(a)
-            print(ik,setAngle[ik])
-    port.sendGoalAngles()
-    #print('saida -------------------------->',y)
+    if (i%5000 != 0):
+        for ik, j in enumerate(joints):
+            if (ik < 2):
+                a = setAngle[ik] - e_rad
+                #print(type(a))
+                j.setGoalAngle(a)
+                print(ik,a)
+                # print(ik,setAngle[ik])
+                print(ik,setAngle[ik])
+            #print('currente', 13+ 2*ik, j.receiveCurrAngle())
+        port.sendGoalAngles()
+        time.sleep(0.00001)
+    print(i,'-------')
+    if (i%5000 == 0 and i != 0):
+        print('aaaaaaaaaaaa')
+        for ik, j in enumerate(joints):
+            if (ik < 2):
+                a = setAngle[ik] + (0.17)*5
+                j.setGoalAngle(a)
+                print(ik, a)
+            if (ik >= 2):
+                a = setAngle[ik] - 0.08
+                j.setGoalAngle(a)
+                print(ik, a)
+            #print('currente', 13+ 2*ik, j.receiveCurrAngle())
+        port.sendGoalAngles()
+        y = j1.receiveSEA()
+        time.sleep(tempo_step)
