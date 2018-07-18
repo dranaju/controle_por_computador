@@ -126,7 +126,7 @@ while True:
     e_rad = u1*math.pi/180.
     #print('rad',e_rad)
     print('i--', i)
-    if (i%1000 != 0):
+    if (i%500 != 0):
         for ik, j in enumerate(joints):
             if (ik < 2):
                 a = setAngle[ik] - e_rad
@@ -140,7 +140,7 @@ while True:
                 #print(ik,setAngle[ik])
         port.sendGoalAngles()
         time.sleep(0.01)
-    if (i%1000 == 0 and i != 0):
+    if (i%500 == 0 and i != 0):
         print('aaaaaaaaaaaa')
         for ik, j in enumerate(joints):
             if (ik < 2):

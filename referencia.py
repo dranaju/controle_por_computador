@@ -99,9 +99,8 @@ tempo_step = 2
 while True:
     i += 1
 
-    aux2 = aux + 50*math.cos((math.pi)*i*1/1000)
+    aux2 = aux + 50*math.cos((math.pi*2)*i*1/1000)
     r = aux2
-    #print('------------------', aux2)
     e1l = e1
 
     print('referencia', round(r,3))
@@ -112,22 +111,16 @@ while True:
     u1l = u1
     u1 = -c1*u1l + a1*e1 + b1*e1l
     u1 = u1*ganho
-    #print('u1', u1, u1l)
 
     u2l = u2
     u2 = -c2*u2l + a2*u1 + b2*u1l
     u2 = u2*ganho
-    #print('u2', u2, u2l)
 
     u3l2 = u3l
     u3l = u3
     u3 = -c3*u3l + a3*u2 + b3*u2l
     u3 = u3*ganho
-    #print('control', round(u3,3))
     
-    #--------------------------------------------
-    # y = up
-    #print('goal', aux)
     y = j1.receiveSEA()
     if (y > 0):
         yl = y
@@ -135,19 +128,14 @@ while True:
         y = yl
     writer.writerow([i,y])
     e_rad = u3*math.pi/180.
-    #print('rad',e_rad)
     print('i------',i)
     if (i%500 != 0):
         for ik, j in enumerate(joints):
             if (ik < 2):
                 a = setAngle[ik] - e_rad
                 j.setGoalAngle(a)
-                #print(ik,a)
-                #print(ik,setAngle[ik])
             if (ik >= 2):
                 a = setAngle[ik] + e_rad
                 j.setGoalAngle(a)
-                #print(ik,a)
-                #print(ik,setAngle[ik])
         port.sendGoalAngles()
-        time.sleep(0.01)
+        time.sleep(0.001)
