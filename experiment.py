@@ -94,7 +94,7 @@ i = 0
 import csv
 file = open('caso.csv', 'w')
 writer = csv.writer(file)
-ganho = 1.0
+ganho = 0.5
 tempo_step = 2
 while True:
     i += 1
@@ -113,17 +113,6 @@ while True:
     u1 = -c1*u1l + a1*e1 + b1*e1l
     u1 = u1*ganho
     #print('u1', u1, u1l)
-
-    u2l = u2
-    u2 = -c2*u2l + a2*u1 + b2*u1l
-    u2 = u2*ganho
-    #print('u2', u2, u2l)
-
-    u3l2 = u3l
-    u3l = u3
-    u3 = -c3*u3l + a3*u2 + b3*u2l
-    u3 = u3*ganho
-    #print('control', round(u3,3))
     
     #--------------------------------------------
     # y = up
@@ -134,10 +123,10 @@ while True:
     if (y == 0.0):
         y = yl
     writer.writerow([i,y])
-    e_rad = u3*math.pi/180.
+    e_rad = u1*math.pi/180.
     #print('rad',e_rad)
-    print('i------',i)
-    if (i%500 != 0):
+    print('i--', i)
+    if (i%1000 != 0):
         for ik, j in enumerate(joints):
             if (ik < 2):
                 a = setAngle[ik] - e_rad
@@ -151,7 +140,7 @@ while True:
                 #print(ik,setAngle[ik])
         port.sendGoalAngles()
         time.sleep(0.01)
-    if (i%500 == 0 and i != 0):
+    if (i%1000 == 0 and i != 0):
         print('aaaaaaaaaaaa')
         for ik, j in enumerate(joints):
             if (ik < 2):
